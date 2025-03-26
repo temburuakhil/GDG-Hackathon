@@ -1,4 +1,3 @@
-
 import { 
   Droplet, 
   Tractor, 
@@ -27,7 +26,8 @@ import {
   Building,
   BadgeCheck,
   BarChart,
-  Briefcase
+  Briefcase,
+  Brain
 } from 'lucide-react';
 
 export interface ModuleFeature {
@@ -155,9 +155,9 @@ export const modules: Module[] = [
         icon: Building
       },
       {
-        title: 'Telemedicine',
-        description: 'Connect with healthcare professionals remotely.',
-        icon: Handshake
+        title: 'Future Health Prediction',
+        description: 'Predict potential health risks using AI.',
+        icon: Brain
       }
     ],
     stats: [

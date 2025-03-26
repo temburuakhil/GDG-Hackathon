@@ -1,15 +1,131 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { modules } from '@/lib/moduleData';
 import { AnimatedIcon } from '@/components/ui/AnimatedIcon';
 import { motion } from 'framer-motion';
-import { ArrowLeft, BarChart } from 'lucide-react';
+import { ArrowLeft, BarChart, CloudSun, Upload, Sprout } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { farmerService, type FarmerStats, type CropPrice, type WeatherAlert, type MarketTrend, type CropRecommendation } from '@/services/farmerService';
+import { format } from 'date-fns';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useToast } from '@/components/ui/use-toast';
 
 const FarmerModule = () => {
   const module = modules.find(m => m.id === 'farmer')!;
+  const { toast } = useToast();
+  const [selectedSoilType, setSelectedSoilType] = useState('Black Soil');
+  const [soilAnalysisFile, setSoilAnalysisFile] = useState<File | null>(null);
   
+  // State for real-time data
+  const [stats, setStats] = useState<FarmerStats | null>(null);
+  const [marketPrices, setMarketPrices] = useState<CropPrice[]>([]);
+  const [weatherAlerts, setWeatherAlerts] = useState<WeatherAlert[]>([]);
+  const [marketTrends, setMarketTrends] = useState<MarketTrend[]>([]);
+  const [cropRecommendations, setCropRecommendations] = useState<CropRecommendation[]>([]);
+
+  // WebSocket subscriptions
+  useEffect(() => {
+    // Connect to WebSocket
+    farmerService.connectWebSocket();
+
+    // Subscribe to real-time updates
+    const unsubscribeStats = farmerService.subscribeToUpdates('farmerStats', setStats);
+    const unsubscribePrices = farmerService.subscribeToUpdates('marketPrices', setMarketPrices);
+    const unsubscribeAlerts = farmerService.subscribeToUpdates('weatherAlerts', setWeatherAlerts);
+    const unsubscribeTrends = farmerService.subscribeToUpdates('marketTrends', setMarketTrends);
+
+    // Initial data fetch
+    const fetchInitialData = async () => {
+      try {
+        const [statsData, pricesData, alertsData, trendsData] = await Promise.all([
+          farmerService.getStats(),
+          farmerService.getMarketPrices(),
+          farmerService.getWeatherAlerts(),
+          farmerService.getMarketTrends()
+        ]);
+        setStats(statsData);
+        setMarketPrices(pricesData);
+        setWeatherAlerts(alertsData);
+        setMarketTrends(trendsData);
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch initial data",
+          variant: "destructive"
+        });
+      }
+    };
+
+    fetchInitialData();
+
+    // Cleanup
+    return () => {
+      unsubscribeStats();
+      unsubscribePrices();
+      unsubscribeAlerts();
+      unsubscribeTrends();
+      farmerService.disconnectWebSocket();
+    };
+  }, []);
+
+  // Update crop recommendations when soil type changes
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      try {
+        const recommendations = await farmerService.getCropRecommendations(selectedSoilType);
+        setCropRecommendations(recommendations);
+      } catch (error) {
+        console.error('Error fetching crop recommendations:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch crop recommendations",
+          variant: "destructive"
+        });
+      }
+    };
+
+    fetchRecommendations();
+  }, [selectedSoilType]);
+
+  const handleSoilAnalysisSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!soilAnalysisFile) {
+      toast({
+        title: "Error",
+        description: "Please select a soil sample image to upload",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('sample', soilAnalysisFile);
+
+    try {
+      await farmerService.submitSoilAnalysis(formData);
+      toast({
+        title: "Success",
+        description: "Soil analysis request submitted successfully",
+      });
+      setSoilAnalysisFile(null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit soil analysis request",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <AppLayout>
       <div className="mb-6">
@@ -41,8 +157,15 @@ const FarmerModule = () => {
         </motion.div>
       </div>
       
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {module.stats?.map((stat, index) => (
+        {stats && [
+          { label: 'Farmers Registered', value: stats.farmersRegistered },
+          { label: 'Market Updates', value: stats.marketUpdates },
+          { label: 'Crop Varieties', value: stats.cropVarieties },
+          { label: 'Total Area (Hectares)', value: stats.totalArea },
+          { label: 'Active Markets', value: stats.activeMarkets }
+        ].map((stat, index) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, y: 20 }}
@@ -55,55 +178,144 @@ const FarmerModule = () => {
           </motion.div>
         ))}
       </div>
-      
-      <h2 className="text-xl font-semibold mb-4">Features</h2>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {module.features.map((feature, index) => (
-          <motion.div
-            key={feature.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 + (index * 0.1), ease: [0.22, 1, 0.36, 1] }}
-            className={`glass p-6 rounded-xl border-l-4 border-${module.color} hover-lift`}
-          >
-            <div className="flex items-start gap-4">
-              <AnimatedIcon
-                icon={<feature.icon className="h-5 w-5" />}
-                color={module.color}
-                size="sm"
-              />
-              
-              <div>
-                <h3 className="font-medium">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{feature.description}</p>
+
+      {/* Weather Alerts */}
+      {weatherAlerts && weatherAlerts.length > 0 && (
+        <Card className="p-6 mb-8">
+          <h2 className="text-xl font-semibold mb-4">Weather Alerts</h2>
+          <div className="space-y-4">
+            {weatherAlerts.map(alert => (
+              <Alert key={alert.id} className={alert.severity === 'high' ? 'border-red-500' : alert.severity === 'medium' ? 'border-yellow-500' : 'border-blue-500'}>
+                <CloudSun className="h-4 w-4" />
+                <AlertTitle className="flex items-center gap-2">
+                  {alert.type.charAt(0).toUpperCase() + alert.type.slice(1)}
+                  <Badge variant={alert.severity === 'high' ? 'destructive' : alert.severity === 'medium' ? 'secondary' : 'default'}>
+                    {alert.severity}
+                  </Badge>
+                </AlertTitle>
+                <AlertDescription>
+                  {alert.message}
+                  <div className="text-sm text-muted-foreground mt-2">
+                    {format(new Date(alert.startDate), 'PPP')} - {format(new Date(alert.endDate), 'PPP')}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Market Prices */}
+      {marketPrices && marketPrices.length > 0 && (
+        <Card className="p-6 mb-8">
+          <h2 className="text-xl font-semibold mb-4">Current Market Prices</h2>
+          <div className="space-y-4">
+            {marketPrices.map(price => (
+              <div key={price.id} className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
+                <div>
+                  <h3 className="font-medium">{price.cropName}</h3>
+                  <p className="text-sm text-muted-foreground">{price.market}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold">₹{price.price.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">{price.unit}</p>
+                </div>
               </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* AI Crop Advisor */}
+      <Card className="p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-4">AI Crop Advisor</h2>
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">Select Soil Type</label>
+            <Select value={selectedSoilType} onValueChange={setSelectedSoilType}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Black Soil">Black Soil</SelectItem>
+                <SelectItem value="Red Soil">Red Soil</SelectItem>
+                <SelectItem value="Alluvial Soil">Alluvial Soil</SelectItem>
+                <SelectItem value="Laterite Soil">Laterite Soil</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {cropRecommendations && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {cropRecommendations.map(rec => (
+                <div key={rec.id} className="p-4 rounded-lg bg-muted/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sprout className="h-4 w-4" />
+                    <h3 className="font-medium">{rec.cropName}</h3>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <p>Confidence: {(rec.confidence * 100).toFixed(1)}%</p>
+                    <p>Expected Yield: {rec.expectedYield} quintals/hectare</p>
+                    <p>Water Requirement: {rec.waterRequirement} mm</p>
+                    <p>Seasons: {rec.seasonality.join(', ')}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-          </motion.div>
-        ))}
-      </div>
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="mt-8 glass rounded-xl p-6"
-      >
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold">Market Price Trends</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Recent price trends for wheat, rice, and pulses in your area.
-            </p>
-          </div>
-          
-          <div className={`h-40 w-full md:w-1/2 flex items-center justify-center bg-${module.color}/5 rounded-lg border border-${module.color}/20`}>
-            <BarChart className={`h-6 w-6 text-${module.color} opacity-60`} />
-            <p className="text-sm text-muted-foreground ml-2">Chart visualization will appear here</p>
-          </div>
+          )}
+
+          <form onSubmit={handleSoilAnalysisSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Upload Soil Sample Image</label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setSoilAnalysisFile(e.target.files?.[0] || null)}
+              />
+            </div>
+            <Button type="submit" disabled={!soilAnalysisFile}>
+              Submit for Analysis
+            </Button>
+          </form>
         </div>
-      </motion.div>
-      
+      </Card>
+
+      {/* Market Trends */}
+      {marketTrends && marketTrends.length > 0 && (
+        <Card className="p-6 mb-8">
+          <h2 className="text-xl font-semibold mb-4">Market Price Trends</h2>
+          <div className="h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={marketTrends[0].data}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={(value) => format(new Date(value), 'MMM d')}
+                />
+                <YAxis />
+                <Tooltip
+                  labelFormatter={(value) => format(new Date(value), 'PPP')}
+                  formatter={(value: number) => [`₹${value.toFixed(2)}`, 'Price']}
+                />
+                <Legend />
+                {marketTrends.map((trend, index) => (
+                  <Line
+                    key={trend.cropName}
+                    type="monotone"
+                    data={trend.data}
+                    dataKey="price"
+                    name={trend.cropName}
+                    stroke={index === 0 ? '#0EA5E9' : index === 1 ? '#6366F1' : '#10B981'}
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -111,7 +323,7 @@ const FarmerModule = () => {
         className="mt-6 p-4 glass rounded-xl text-center"
       >
         <p className="text-sm text-muted-foreground">
-          Data is cached for offline use. Last updated: Today, 10:45 AM
+          Data last updated: {marketPrices && marketPrices[0] ? format(new Date(marketPrices[0].timestamp), 'PPP p') : 'Never'}
         </p>
       </motion.div>
     </AppLayout>

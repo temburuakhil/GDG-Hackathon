@@ -1,14 +1,38 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { modules } from '@/lib/moduleData';
 import { AnimatedIcon } from '@/components/ui/AnimatedIcon';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Trees } from 'lucide-react';
+import { ArrowLeft, Trees, AlertCircle, Leaf } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { DeforestationAlerts } from '@/components/deforestation/DeforestationAlerts';
+import { SoilHealthDashboard } from '@/components/soil/SoilHealthDashboard';
+import { ResourceMaps } from '@/components/resource/ResourceMaps';
+import { ForestCoverStatus } from '@/components/resource/ForestCoverStatus';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const ResourceModule = () => {
   const module = modules.find(m => m.id === 'resource')!;
+  const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
+  const [deforestationAlertsOpen, setDeforestationAlertsOpen] = useState(false);
+  const [soilHealthOpen, setSoilHealthOpen] = useState(false);
+  const [resourceMapsOpen, setResourceMapsOpen] = useState(false);
+  
+  const handleFeatureClick = (feature: any) => {
+    console.log('Feature clicked:', feature.title);
+    if (feature.title === 'Deforestation Alerts') {
+      console.log('Opening Deforestation Alerts dialog');
+      setDeforestationAlertsOpen(true);
+    } else if (feature.title === 'Soil Health Dashboard') {
+      console.log('Opening Soil Health Dashboard dialog');
+      setSoilHealthOpen(true);
+    } else if (feature.title === 'Resource Maps') {
+      console.log('Opening Resource Maps dialog');
+      setResourceMapsOpen(true);
+    } else {
+      setSelectedFeature(feature.title);
+    }
+  };
   
   return (
     <AppLayout>
@@ -65,7 +89,8 @@ const ResourceModule = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 + (index * 0.1), ease: [0.22, 1, 0.36, 1] }}
-            className={`glass p-6 rounded-xl border-l-4 border-${module.color} hover-lift`}
+            className={`glass p-6 rounded-xl border-l-4 border-${module.color} hover-lift cursor-pointer`}
+            onClick={() => handleFeatureClick(feature)}
           >
             <div className="flex items-start gap-4">
               <AnimatedIcon
@@ -89,19 +114,7 @@ const ResourceModule = () => {
         transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="mt-8 glass rounded-xl p-6"
       >
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold">Forest Cover Status</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Forest cover in your district is stable. No deforestation alerts.
-            </p>
-          </div>
-          
-          <div className={`h-40 w-full md:w-1/2 flex items-center justify-center bg-${module.color}/5 rounded-lg border border-${module.color}/20`}>
-            <Trees className={`h-6 w-6 text-${module.color} opacity-60`} />
-            <p className="text-sm text-muted-foreground ml-2">Forest cover map will appear here</p>
-          </div>
-        </div>
+        <ForestCoverStatus />
       </motion.div>
       
       <motion.div
@@ -114,6 +127,24 @@ const ResourceModule = () => {
           Resource data synced weekly. Last updated: 2 days ago
         </p>
       </motion.div>
+
+      <Dialog open={deforestationAlertsOpen} onOpenChange={setDeforestationAlertsOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DeforestationAlerts />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={soilHealthOpen} onOpenChange={setSoilHealthOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <SoilHealthDashboard />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={resourceMapsOpen} onOpenChange={setResourceMapsOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <ResourceMaps />
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };

@@ -1,14 +1,42 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { modules } from '@/lib/moduleData';
 import { AnimatedIcon } from '@/components/ui/AnimatedIcon';
 import { motion } from 'framer-motion';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { StemLessons } from '@/components/education/StemLessons';
+import { VirtualClassrooms } from '@/components/education/VirtualClassrooms';
+import AttendanceTracking from '@/components/education/AttendanceTracking';
+import AvailableCourses, { sampleCourses } from '@/components/education/AvailableCourses';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const EducationModule = () => {
   const module = modules.find(m => m.id === 'education')!;
+  const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
+  const [stemLessonsOpen, setStemLessonsOpen] = useState(false);
+  const [virtualClassroomsOpen, setVirtualClassroomsOpen] = useState(false);
+  const [attendanceTrackingOpen, setAttendanceTrackingOpen] = useState(false);
+  const [availableCoursesOpen, setAvailableCoursesOpen] = useState(false);
+  
+  const handleFeatureClick = (feature: any) => {
+    console.log('Feature clicked:', feature.title);
+    if (feature.title === 'Offline STEM Lessons') {
+      console.log('Opening STEM Lessons dialog');
+      setStemLessonsOpen(true);
+    } else if (feature.title === 'Virtual Classrooms') {
+      console.log('Opening Virtual Classrooms dialog');
+      setVirtualClassroomsOpen(true);
+    } else if (feature.title === 'Attendance Tracking') {
+      console.log('Opening Attendance Tracking dialog');
+      setAttendanceTrackingOpen(true);
+    } else if (feature.title === 'Available Courses') {
+      console.log('Opening Available Courses dialog');
+      setAvailableCoursesOpen(true);
+    } else {
+      setSelectedFeature(feature.title);
+    }
+  };
   
   return (
     <AppLayout>
@@ -65,7 +93,8 @@ const EducationModule = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 + (index * 0.1), ease: [0.22, 1, 0.36, 1] }}
-            className={`glass p-6 rounded-xl border-l-4 border-${module.color} hover-lift`}
+            className={`glass p-6 rounded-xl border-l-4 border-${module.color} hover-lift cursor-pointer`}
+            onClick={() => handleFeatureClick(feature)}
           >
             <div className="flex items-start gap-4">
               <AnimatedIcon
@@ -89,17 +118,42 @@ const EducationModule = () => {
         transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="mt-8 glass rounded-xl p-6"
       >
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold">Available Courses</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Browse offline courses in mathematics, science, and language studies.
-            </p>
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold">Available Courses</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Browse offline courses in mathematics, science, and language studies.
+              </p>
+            </div>
+            
+            <button
+              onClick={() => setAvailableCoursesOpen(true)}
+              className={`px-4 py-2 rounded-md bg-${module.color}/10 hover:bg-${module.color}/20 text-${module.color} text-sm font-medium transition-colors mt-2 md:mt-0`}
+            >
+              View All Courses
+            </button>
           </div>
           
-          <div className={`h-40 w-full md:w-1/2 flex items-center justify-center bg-${module.color}/5 rounded-lg border border-${module.color}/20`}>
-            <BookOpen className={`h-6 w-6 text-${module.color} opacity-60`} />
-            <p className="text-sm text-muted-foreground ml-2">Course catalog will appear here</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Preview of first two courses */}
+            {sampleCourses.slice(0, 2).map((course, index) => (
+              <motion.div
+                key={course.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="flex items-start gap-4 p-4 rounded-lg border bg-background/50"
+              >
+                <div className={`p-2 rounded-lg bg-${course.subject === 'mathematics' ? 'blue' : course.subject === 'science' ? 'green' : 'purple'}-100 dark:bg-${course.subject === 'mathematics' ? 'blue' : course.subject === 'science' ? 'green' : 'purple'}-900/20`}>
+                  <BookOpen className={`h-5 w-5 text-${course.subject === 'mathematics' ? 'blue' : course.subject === 'science' ? 'green' : 'purple'}-500`} />
+                </div>
+                <div>
+                  <h4 className="font-medium">{course.title}</h4>
+                  <p className="text-xs text-muted-foreground mt-1">{course.description}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </motion.div>
@@ -114,6 +168,30 @@ const EducationModule = () => {
           Courses are available offline. New content syncs when connected.
         </p>
       </motion.div>
+
+      <Dialog open={stemLessonsOpen} onOpenChange={setStemLessonsOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <StemLessons />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={virtualClassroomsOpen} onOpenChange={setVirtualClassroomsOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <VirtualClassrooms />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={attendanceTrackingOpen} onOpenChange={setAttendanceTrackingOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <AttendanceTracking />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={availableCoursesOpen} onOpenChange={setAvailableCoursesOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <AvailableCourses />
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };

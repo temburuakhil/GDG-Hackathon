@@ -426,339 +426,123 @@ const HealthModule = () => {
           </motion.div>
         ))}
       </div>
-      
-      <h2 className="text-xl font-semibold mb-4">Features</h2>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-        <Dialog open={isSymptomCheckOpen} onOpenChange={setIsSymptomCheckOpen}>
-          <DialogTrigger asChild>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className={`glass p-6 rounded-xl border-l-4 border-${module.color} hover-lift cursor-pointer`}
-            >
-              <div className="flex items-start gap-4">
-                <AnimatedIcon
-                  icon={<Microscope className="h-5 w-5" />}
-                  color={module.color}
-                  size="sm"
-                />
-                
-                <div>
-                  <h3 className="font-medium">Symptom Checker</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {selectedSymptoms.length > 0 
-                      ? `${selectedSymptoms.length} symptoms selected`
-                      : 'Identify possible health issues with our AI tool.'}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Symptom Checker</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-sm font-medium mb-3">Select Your Symptoms</h3>
-                <div className="flex flex-wrap gap-2">
-                  {commonSymptoms.map(symptom => (
-                    <Badge
-                      key={symptom}
-                      variant={selectedSymptoms.includes(symptom) ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => handleSymptomToggle(symptom)}
-                    >
-                      {symptom}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
 
-              {symptomCheckResult ? (
-                <div className="space-y-4">
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Health Crisis Prevention</h2>
+        <p className="text-gray-500">Check symptoms, find healthcare services, and access health information.</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Health Checks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{stats?.healthChecks}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Medical Camps</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{stats?.medicalCamps}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setIsSymptomCheckOpen(true)}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <StethoscopeIcon className="h-5 w-5" />
+                Symptom Checker
+              </CardTitle>
+              <CardDescription>Identify possible health issues with our AI tool.</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setIsFacilityLocatorOpen(true)}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPinIcon className="h-5 w-5" />
+                Healthcare Locator
+              </CardTitle>
+              <CardDescription>Find healthcare facilities near you.</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleOpenPrediction}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ActivityIcon className="h-5 w-5" />
+                Future Health Prediction
+              </CardTitle>
+              <CardDescription>Predict potential health risks using AI.</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Health Advisories</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {advisories.map((advisory) => (
+            <Card key={advisory.id} className="relative overflow-hidden">
+              <CardHeader>
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className={`h-5 w-5 text-${symptomCheckResult.severity === 'high' ? 'red' : symptomCheckResult.severity === 'medium' ? 'yellow' : 'green'}`} />
-                    <h3 className="font-medium">Analysis Results</h3>
+                    <AlertCircle className={`h-5 w-5 ${
+                      advisory.severity === 'high' 
+                        ? 'text-red-500' 
+                        : advisory.severity === 'medium' 
+                        ? 'text-yellow-500' 
+                        : 'text-blue-500'
+                    }`} />
+                    <CardTitle className="text-lg">{advisory.title}</CardTitle>
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-sm">
-                      <span className="font-medium">Severity Level:</span>{' '}
-                      <span className={`text-${symptomCheckResult.severity === 'high' ? 'red' : symptomCheckResult.severity === 'medium' ? 'yellow' : 'green'}`}>
-                        {symptomCheckResult.severity.toUpperCase()}
-                      </span>
-                    </p>
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Possible Conditions:</h4>
-                      <ScrollArea className="h-[200px] pr-4">
-                        <div className="space-y-3">
-                          {symptomCheckResult.possibleConditions.map((condition, index) => (
-                            <div key={index} className="p-3 rounded-lg bg-muted/50">
-                              <p className="font-medium">{condition.name}</p>
-                              <p className="text-sm text-muted-foreground mt-1">{condition.description}</p>
-                              <div className="mt-2">
-                                <p className="text-sm font-medium">Recommendations:</p>
-                                <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
-                                  {condition.recommendations.map((rec, i) => (
-                                    <li key={i}>{rec}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Next Steps:</h4>
-                      <ul className="list-disc list-inside text-sm text-muted-foreground">
-                        {symptomCheckResult.nextSteps.map((step, index) => (
-                          <li key={index}>{step}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
+                  <Badge variant={
+                    advisory.severity === 'high' 
+                      ? 'destructive' 
+                      : advisory.severity === 'medium' 
+                      ? 'secondary' 
+                      : 'default'
+                  }>
+                    {advisory.severity.toUpperCase()}
+                  </Badge>
                 </div>
-              ) : (
-                <div className="flex justify-center">
-                  <Button 
-                    onClick={handleSymptomCheck}
-                    disabled={isChecking || selectedSymptoms.length === 0}
-                  >
-                    {isChecking ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Checking...
-                      </>
-                    ) : (
-                      'Check Symptoms'
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={isFacilityLocatorOpen} onOpenChange={setIsFacilityLocatorOpen}>
-          <DialogTrigger asChild>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              className={`glass p-6 rounded-xl border-l-4 border-${module.color} hover-lift cursor-pointer`}
-            >
-              <div className="flex items-start gap-4">
-                <AnimatedIcon
-                  icon={<Building className="h-5 w-5" />}
-                  color={module.color}
-                  size="sm"
-                />
-                
-                <div>
-                  <h3 className="font-medium">Healthcare Locator</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {facilities.length} facilities found nearby
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl">
-            <DialogHeader>
-              <DialogTitle>Find Healthcare Facilities</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Input
-                      id="location"
-                      placeholder="Enter city, area, or landmark"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleFacilitySearch()}
-                    />
-                  </div>
-                  <Button 
-                    variant="outline"
-                    onClick={handleGetCurrentLocation}
-                    disabled={gettingLocation}
-                  >
-                    {gettingLocation ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Getting Location...
-                      </>
-                    ) : (
-                      <>
-                        <Crosshair className="mr-2 h-4 w-4" />
-                        Use My Location
-                      </>
-                    )}
-                  </Button>
-                  <Button 
-                    onClick={handleFacilitySearch}
-                    disabled={searching || (!searchQuery.trim() && !gettingLocation)}
-                  >
-                    {searching ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Searching...
-                      </>
-                    ) : (
-                      'Search'
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              <Tabs defaultValue="list" onValueChange={handleTabChange}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="list">List View</TabsTrigger>
-                  <TabsTrigger value="map">Map View</TabsTrigger>
-                </TabsList>
-                <TabsContent value="list">
-                  <ScrollArea className="h-[400px] pr-4">
-                    <div className="space-y-4">
-                      {searchResults.map((facility) => (
-                        <div 
-                          key={facility.id} 
-                          className={`p-4 rounded-lg border bg-card cursor-pointer transition-colors ${
-                            selectedFacility?.id === facility.id ? 'border-primary' : ''
-                          }`}
-                          onClick={() => setSelectedFacility(facility)}
-                        >
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h3 className="font-medium">{facility.name}</h3>
-                              <p className="text-sm text-muted-foreground">{facility.type}</p>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              <span className="text-sm">{facility.rating}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-3 space-y-2">
-                            <div className="flex items-center gap-2 text-sm">
-                              <MapPin className="h-4 w-4 text-muted-foreground" />
-                              <span>{facility.address}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <Phone className="h-4 w-4 text-muted-foreground" />
-                              <span>{facility.phone}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span>{facility.operatingHours}</span>
-                            </div>
-                          </div>
-
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            {facility.specialties.map((specialty, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                {specialty}
-                              </Badge>
-                            ))}
-                          </div>
-
-                          <div className="mt-4">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="w-full"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (facility.coordinates) {
-                                  window.open(
-                                    `https://www.openstreetmap.org/?mlat=${facility.coordinates.lat}&mlon=${facility.coordinates.lng}&zoom=15`,
-                                    '_blank'
-                                  );
-                                }
-                              }}
-                            >
-                              Get Directions
-                            </Button>
-                          </div>
-                        </div>
+                <CardDescription className="mt-2">{advisory.message}</CardDescription>
+                {advisory.affectedAreas && advisory.affectedAreas.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-sm font-medium">Affected Areas:</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {advisory.affectedAreas.map((area, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {area}
+                        </Badge>
                       ))}
                     </div>
-                  </ScrollArea>
-                </TabsContent>
-                <TabsContent value="map">
-                  <div ref={mapRef} className="h-[400px] w-full rounded-lg border overflow-hidden" />
-                </TabsContent>
-              </Tabs>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className={`glass p-6 rounded-xl border-l-4 border-${module.color} hover-lift cursor-pointer`}
-          onClick={handleOpenPrediction}
-        >
-          <div className="flex items-start gap-4">
-            <AnimatedIcon
-              icon={<Brain className="h-5 w-5" />}
-              color={module.color}
-              size="sm"
-            />
-            
-            <div>
-              <h3 className="font-medium">Future Health Prediction</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Predict potential health risks using AI
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="mt-8 glass rounded-xl p-6"
-      >
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold">Health Advisories</h3>
-            {advisories.length > 0 ? (
-              <div className="mt-4 space-y-4">
-                {advisories.map(advisory => (
-                  <div key={advisory.id} className="flex items-start gap-3">
-                    <AlertCircle className={`h-5 w-5 text-${advisory.severity === 'high' ? 'red' : advisory.severity === 'medium' ? 'yellow' : 'blue'}`} />
-                    <div>
-                      <h4 className="font-medium">{advisory.title}</h4>
-                      <p className="text-sm text-muted-foreground mt-1">{advisory.message}</p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {new Date(advisory.timestamp).toLocaleString()}
-                      </p>
-                    </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-muted-foreground mt-2">
-                No active health alerts in your area. Stay hydrated during hot weather.
-              </p>
-            )}
-          </div>
-          
-          <div className={`h-40 w-full md:w-1/2 flex items-center justify-center bg-${module.color}/5 rounded-lg border border-${module.color}/20`}>
-            <HeartPulse className={`h-6 w-6 text-${module.color} opacity-60`} />
-            <p className="text-sm text-muted-foreground ml-2">Health information will appear here</p>
-          </div>
+                )}
+                <p className="text-xs text-muted-foreground mt-2">
+                  Last updated: {new Date(advisory.timestamp).toLocaleString()}
+                </p>
+              </CardHeader>
+            </Card>
+          ))}
+          {advisories.length === 0 && (
+            <Card className="col-span-full">
+              <CardHeader>
+                <CardTitle className="text-lg">No Active Advisories</CardTitle>
+                <CardDescription>
+                  There are currently no active health advisories in your area. Stay hydrated and maintain good health practices.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
         </div>
-      </motion.div>
-      
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -770,81 +554,224 @@ const HealthModule = () => {
         </p>
       </motion.div>
 
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Health Crisis Prevention</h2>
-        <p className="text-gray-500">Check symptoms, find healthcare services, and access health information.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Health Checks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.healthChecks}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Medical Camps</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.medicalCamps}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleSymptomCheck}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <StethoscopeIcon className="h-5 w-5" />
-              Symptom Checker
-            </CardTitle>
-            <CardDescription>Identify possible health issues with our AI tool.</CardDescription>
-          </CardHeader>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGetCurrentLocation}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPinIcon className="h-5 w-5" />
-              Healthcare Locator
-            </CardTitle>
-            <CardDescription>Find healthcare facilities near you.</CardDescription>
-          </CardHeader>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleOpenPrediction}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ActivityIcon className="h-5 w-5" />
-              Future Health Prediction
-            </CardTitle>
-            <CardDescription>Predict potential health risks using AI.</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Health Advisories</h2>
-        <div className="space-y-4">
-          {advisories.map((advisory) => (
-            <Card key={advisory.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{advisory.title}</CardTitle>
-                  <Badge variant={advisory.severity === 'high' ? 'destructive' : 'default'}>
-                    {advisory.severity}
+      <Dialog open={isSymptomCheckOpen} onOpenChange={setIsSymptomCheckOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Symptom Checker</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-sm font-medium mb-3">Select Your Symptoms</h3>
+              <div className="flex flex-wrap gap-2">
+                {commonSymptoms.map(symptom => (
+                  <Badge
+                    key={symptom}
+                    variant={selectedSymptoms.includes(symptom) ? "default" : "outline"}
+                    className="cursor-pointer"
+                    onClick={() => handleSymptomToggle(symptom)}
+                  >
+                    {symptom}
                   </Badge>
+                ))}
+              </div>
+            </div>
+
+            {symptomCheckResult ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className={`h-5 w-5 text-${symptomCheckResult.severity === 'high' ? 'red' : symptomCheckResult.severity === 'medium' ? 'yellow' : 'green'}`} />
+                  <h3 className="font-medium">Analysis Results</h3>
                 </div>
-                <CardDescription>{advisory.message}</CardDescription>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
-      </div>
+                <div className="space-y-2">
+                  <p className="text-sm">
+                    <span className="font-medium">Severity Level:</span>{' '}
+                    <span className={`text-${symptomCheckResult.severity === 'high' ? 'red' : symptomCheckResult.severity === 'medium' ? 'yellow' : 'green'}`}>
+                      {symptomCheckResult.severity.toUpperCase()}
+                    </span>
+                  </p>
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Possible Conditions:</h4>
+                    <ScrollArea className="h-[200px] pr-4">
+                      <div className="space-y-3">
+                        {symptomCheckResult.possibleConditions.map((condition, index) => (
+                          <div key={index} className="p-3 rounded-lg bg-muted/50">
+                            <p className="font-medium">{condition.name}</p>
+                            <p className="text-sm text-muted-foreground mt-1">{condition.description}</p>
+                            <div className="mt-2">
+                              <p className="text-sm font-medium">Recommendations:</p>
+                              <ul className="list-disc list-inside text-sm text-muted-foreground mt-1">
+                                {condition.recommendations.map((rec, i) => (
+                                  <li key={i}>{rec}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Next Steps:</h4>
+                    <ul className="list-disc list-inside text-sm text-muted-foreground">
+                      {symptomCheckResult.nextSteps.map((step, index) => (
+                        <li key={index}>{step}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-center">
+                <Button 
+                  onClick={handleSymptomCheck}
+                  disabled={isChecking || selectedSymptoms.length === 0}
+                >
+                  {isChecking ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Checking...
+                    </>
+                  ) : (
+                    'Check Symptoms'
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isFacilityLocatorOpen} onOpenChange={setIsFacilityLocatorOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Find Healthcare Facilities</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    id="location"
+                    placeholder="Enter city, area, or landmark"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleFacilitySearch()}
+                  />
+                </div>
+                <Button 
+                  variant="outline"
+                  onClick={handleGetCurrentLocation}
+                  disabled={gettingLocation}
+                >
+                  {gettingLocation ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Getting Location...
+                    </>
+                  ) : (
+                    <>
+                      <Crosshair className="mr-2 h-4 w-4" />
+                      Use My Location
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  onClick={handleFacilitySearch}
+                  disabled={searching || (!searchQuery.trim() && !gettingLocation)}
+                >
+                  {searching ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    'Search'
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <Tabs defaultValue="list" onValueChange={handleTabChange}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="list">List View</TabsTrigger>
+                <TabsTrigger value="map">Map View</TabsTrigger>
+              </TabsList>
+              <TabsContent value="list">
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="space-y-4">
+                    {searchResults.map((facility) => (
+                      <div 
+                        key={facility.id} 
+                        className={`p-4 rounded-lg border bg-card cursor-pointer transition-colors ${
+                          selectedFacility?.id === facility.id ? 'border-primary' : ''
+                        }`}
+                        onClick={() => setSelectedFacility(facility)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-medium">{facility.name}</h3>
+                            <p className="text-sm text-muted-foreground">{facility.type}</p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                            <span className="text-sm">{facility.rating}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-3 space-y-2">
+                          <div className="flex items-center gap-2 text-sm">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <span>{facility.address}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <span>{facility.phone}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <span>{facility.operatingHours}</span>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {facility.specialties.map((specialty, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {specialty}
+                            </Badge>
+                          ))}
+                        </div>
+
+                        <div className="mt-4">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (facility.coordinates) {
+                                window.open(
+                                  `https://www.openstreetmap.org/?mlat=${facility.coordinates.lat}&mlon=${facility.coordinates.lng}&zoom=15`,
+                                  '_blank'
+                                );
+                              }
+                            }}
+                          >
+                            Get Directions
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+              <TabsContent value="map">
+                <div ref={mapRef} className="h-[400px] w-full rounded-lg border overflow-hidden" />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showPredictionForm} onOpenChange={setShowPredictionForm}>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">

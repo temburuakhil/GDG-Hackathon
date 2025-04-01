@@ -3,7 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { modules } from '@/lib/moduleData';
 import { AnimatedIcon } from '@/components/ui/AnimatedIcon';
 import { motion } from 'framer-motion';
-import { ArrowLeft, BarChart, CloudSun, Upload, Sprout } from 'lucide-react';
+import { ArrowLeft, BarChart, CloudSun, Upload, Sprout, CloudRain, CloudLightning } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { farmerService, type FarmerStats, type CropPrice, type WeatherAlert, type MarketTrend, type CropRecommendation } from '@/services/farmerService';
@@ -183,23 +183,58 @@ const FarmerModule = () => {
       {weatherAlerts && weatherAlerts.length > 0 && (
         <Card className="p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4">Weather Alerts</h2>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {weatherAlerts.map(alert => (
-              <Alert key={alert.id} className={alert.severity === 'high' ? 'border-red-500' : alert.severity === 'medium' ? 'border-yellow-500' : 'border-blue-500'}>
-                <CloudSun className="h-4 w-4" />
-                <AlertTitle className="flex items-center gap-2">
-                  {alert.type.charAt(0).toUpperCase() + alert.type.slice(1)}
-                  <Badge variant={alert.severity === 'high' ? 'destructive' : alert.severity === 'medium' ? 'secondary' : 'default'}>
-                    {alert.severity}
-                  </Badge>
-                </AlertTitle>
-                <AlertDescription>
-                  {alert.message}
-                  <div className="text-sm text-muted-foreground mt-2">
-                    {format(new Date(alert.startDate), 'PPP')} - {format(new Date(alert.endDate), 'PPP')}
+              <Card
+                key={alert.id}
+                className={`border-2 ${
+                  alert.severity === 'high' 
+                    ? 'border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-900/10'
+                    : alert.severity === 'medium'
+                    ? 'border-yellow-200 bg-yellow-50/50 dark:border-yellow-900 dark:bg-yellow-900/10'
+                    : 'border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-900/10'
+                } rounded-lg p-4`}
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`rounded-full p-2 ${
+                    alert.severity === 'high'
+                      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                      : alert.severity === 'medium'
+                      ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                  }`}>
+                    {alert.type.toLowerCase().includes('rain') ? (
+                      <CloudRain className="h-5 w-5" />
+                    ) : alert.type.toLowerCase().includes('storm') ? (
+                      <CloudLightning className="h-5 w-5" />
+                    ) : (
+                      <CloudSun className="h-5 w-5" />
+                    )}
                   </div>
-                </AlertDescription>
-              </Alert>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-base font-medium">
+                        {alert.type.charAt(0).toUpperCase() + alert.type.slice(1)}
+                      </h3>
+                      <Badge variant={
+                        alert.severity === 'high' 
+                          ? 'destructive'
+                          : alert.severity === 'medium'
+                          ? 'secondary'
+                          : 'default'
+                      }>
+                        {alert.severity}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {alert.message}
+                    </p>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {format(new Date(alert.startDate), 'MMM d, yyyy')} - {format(new Date(alert.endDate), 'MMM d, yyyy')}
+                    </p>
+                  </div>
+                </div>
+              </Card>
             ))}
           </div>
         </Card>

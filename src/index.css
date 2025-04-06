@@ -1,0 +1,251 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 43 33% 91%;
+    --foreground: 26 47% 27%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 26 47% 27%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 26 47% 27%;
+
+    --primary: 95 47% 35%;
+    --primary-foreground: 43 33% 91%;
+
+    --secondary: 26 75% 31%;
+    --secondary-foreground: 43 33% 91%;
+
+    --muted: 43 20% 85%;
+    --muted-foreground: 26 16% 47%;
+
+    --accent: 31 48% 32%;
+    --accent-foreground: 43 33% 91%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 43 33% 91%;
+
+    --border: 26 22% 77%;
+    --input: 26 22% 77%;
+    --ring: 95 47% 35%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 26 47% 27%;
+    --sidebar-primary: 95 47% 35%;
+    --sidebar-primary-foreground: 43 33% 91%;
+    --sidebar-accent: 26 22% 91%;
+    --sidebar-accent-foreground: 26 47% 27%;
+    --sidebar-border: 26 22% 77%;
+    --sidebar-ring: 95 47% 35%;
+  }
+
+  .dark {
+    --background: 0 0% 10%;
+    --foreground: 43 33% 91%;
+
+    --card: 0 0% 13%;
+    --card-foreground: 43 33% 91%;
+
+    --popover: 0 0% 13%;
+    --popover-foreground: 43 33% 91%;
+
+    --primary: 95 47% 35%;
+    --primary-foreground: 43 33% 91%;
+
+    --secondary: 26 75% 31%;
+    --secondary-foreground: 43 33% 91%;
+
+    --muted: 0 0% 20%;
+    --muted-foreground: 43 20% 75%;
+
+    --accent: 31 48% 32%;
+    --accent-foreground: 43 33% 91%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 43 33% 91%;
+
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --ring: 95 47% 35%;
+
+    --sidebar-background: 0 0% 13%;
+    --sidebar-foreground: 43 33% 91%;
+    --sidebar-primary: 95 47% 35%;
+    --sidebar-primary-foreground: 43 33% 91%;
+    --sidebar-accent: 0 0% 20%;
+    --sidebar-accent-foreground: 43 33% 91%;
+    --sidebar-border: 0 0% 25%;
+    --sidebar-ring: 95 47% 35%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv05" 1;
+  }
+
+  .h1 {
+    @apply text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight font-display;
+  }
+
+  .h2 {
+    @apply text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight font-display;
+  }
+
+  .h3 {
+    @apply text-2xl sm:text-3xl font-bold tracking-tight font-display;
+  }
+
+  .h4 {
+    @apply text-xl sm:text-2xl font-semibold tracking-tight font-display;
+  }
+
+  .glass {
+    @apply bg-white/70 dark:bg-black/70 backdrop-blur-lg border border-white/20 dark:border-black/20 shadow-glass;
+  }
+
+  .glass-hover {
+    @apply hover:bg-white/80 dark:hover:bg-black/80 hover:shadow-glass-hover transition-all duration-300;
+  }
+  
+  .rural-card {
+    @apply bg-gradient-to-br from-rural-lightBg to-rural-lightBg/80 dark:from-rural-darkBg/80 dark:to-rural-darkBg border border-rural-brown/10 dark:border-rural-green/10 shadow-md;
+  }
+}
+
+.animate-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animate-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animate-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animate-delay-400 {
+  animation-delay: 400ms;
+}
+
+.animate-delay-500 {
+  animation-delay: 500ms;
+}
+
+.animate-delay-600 {
+  animation-delay: 600ms;
+}
+
+.animate-delay-700 {
+  animation-delay: 700ms;
+}
+
+.animate-delay-800 {
+  animation-delay: 800ms;
+}
+
+.animate-duration-500 {
+  animation-duration: 500ms;
+}
+
+.animate-duration-1000 {
+  animation-duration: 1000ms;
+}
+
+.animate-duration-1500 {
+  animation-duration: 1500ms;
+}
+
+.animate-duration-2000 {
+  animation-duration: 2000ms;
+}
+
+/* Custom hover animations */
+.hover-lift {
+  @apply transition-transform duration-300;
+}
+
+.hover-lift:hover {
+  transform: translateY(-6px);
+}
+
+.module-card {
+  @apply relative overflow-hidden rounded-2xl transition-all duration-300;
+  perspective: 1000px;
+}
+
+.module-card::before {
+  content: "";
+  @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.2), transparent 70%);
+}
+
+.module-card:hover::before {
+  @apply opacity-100;
+}
+
+.animated-mask-effect {
+  animation: mask-fade 3s ease infinite;
+}
+
+@keyframes mask-fade {
+  0% {
+    mask-position: 0% 50%;
+  }
+  50% {
+    mask-position: 100% 50%;
+  }
+  100% {
+    mask-position: 0% 50%;
+  }
+}
+
+/* Pulse effect for icons */
+.pulse-icon {
+  position: relative;
+}
+
+.pulse-icon::after {
+  content: '';
+  @apply absolute inset-0 rounded-full animate-pulse-ring opacity-0;
+}
+
+.pulse-icon:hover::after {
+  @apply opacity-100;
+}
+
+/* Hide scrollbar but allow scrolling */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Rural theme */
+.rural-bg-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%235c832f' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.dark .rural-bg-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%238b4513' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
